@@ -1,1 +1,4 @@
 # rate-your-professor
+
+CSUB RATE YOUR PROFESSOR
+DATABASE CLASS PROJECT

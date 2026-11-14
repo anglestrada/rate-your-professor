@@ -88,12 +88,30 @@ Then set up the project:
 cd rate-your-professor
 python3 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
-pip install flask mariadb python-dotenv
-cp .env.example .env               # fill in DB_USER and DB_PASSWORD
+pip install -r requirements.txt
+cp .env.example .env               # fill in DB_USER, DB_PASSWORD and SECRET_KEY
 ```
 
-On a Mac, `pip install mariadb` needs MariaDB's C library first:
-`brew install mariadb-connector-c`.
+`pip install mariadb` needs MariaDB's C library first:
+
+- Mac: `brew install mariadb-connector-c`
+- Linux (Debian/Ubuntu): `sudo apt install libmariadb-dev`
+
+For `SECRET_KEY`, generate your own and paste it into `.env`:
+
+```sh
+python3 -c "import secrets; print(secrets.token_hex(32))"
+```
+
+Run the app, then open `http://127.0.0.1:5000`. The home page shows how many
+professors are in the database, which confirms the connection works.
+
+```sh
+flask --app flask_app/app.py run --debug
+```
+
+`--debug` reloads the app when you save a file. Run `source .venv/bin/activate`
+again in each new terminal.
 
 To stop the tunnel: `pkill -f "ssh -f -N artemis-tunnel"`.
 

@@ -43,6 +43,16 @@ $gradeQuery = $conn->prepare("
     ORDER BY r.grade;
 ");
 
+$reviewQuery = $conn->prepare("
+    SELECT c.body, c.created_at, r.rating, r.difficulty, r.grade
+    FROM review AS r
+    JOIN teaching AS t ON r.teaching_id = t.teaching_id
+    JOIN content AS c ON r.review_id = c.content_id
+    WHERE t.prof_id = ?
+    AND c.status = 'visible'
+    ORDER BY c.created_at DESC
+");
+
 $query->execute([$id]);
 $professor = $query->fetch(PDO::FETCH_ASSOC);
 
@@ -51,6 +61,9 @@ $ratingStats = $ratingQuery->fetch(PDO::FETCH_ASSOC);
 
 $gradeQuery->execute([$id]);
 $gradeStats = $gradeQuery->fetchAll(PDO::FETCH_ASSOC);
+
+$reviewQuery->execute([$id]);
+$reviewStats = $reviewQuery->fetchAll(PDO::FETCH_ASSOC);
 
 if (!$professor)
 {
@@ -65,7 +78,7 @@ if (!$professor)
         $professor['first_name']. ' '. $professor['last_name']. ' '. $professor['title']. ' '. $professor['department']
     );
     ?>
-<br>
+    <br>
     <?php
     if ($ratingStats['average_rating'] !== null)
     {
@@ -90,18 +103,25 @@ if (!$professor)
     
     ?>
     <br>
+    <br>
     <?php
-    for ($i = 0; $i < count($gradeStats); $i++)
-    {
-        if($gradeStats[$i]['grade'] != '')
-        {
-            echo htmlspecialchars($gradeStats[$i]['grade']). ': '. $gradeStats[$i]['grade_count']. '<br>';
-        }
-        else
-        {
-            continue;
-        }
-    }
-    ?>
+    if (count($reviewStats) === 0) {
+    echo '<p>No reviews yet.</p>';
+}
 
+for ($i = 0; $i < count($reviewStats); $i++)
+{
+    echo '<div class="review">';
+
+    echo '<p>Rating: '. htmlspecialchars($reviewStats[$i]['rating']). ' / 5</p>';
+
+    echo '<p>Difficulty:'. htmlspecialchars($reviewStats[$i]['difficulty']). ' / 5</p>';
+
+    echo '<p>Grade: '. htmlspecialchars($reviewStats[$i]['grade'] ?? 'Not reported'). '</p>';
+
+    echo '<p>'. nl2br(htmlspecialchars($reviewStats[$i]['body'])). '</p>';
+
+    echo '</div>';
+}
+    ?>
 </h2>

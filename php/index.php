@@ -28,3 +28,11 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Departments</title>
 </head>
+
+<body>
+    <h1>Departments</h1>
+    <ul>
+        <?php foreach ($dept_info as $department) : ?>
+            <li><a href="department.php?id=<?= htmlspecialchars($department['dept_id']) ?>"><?= htmlspecialchars($department['dept_name']) ?></a></li>
+        <?php endforeach; ?>
+    </ul>

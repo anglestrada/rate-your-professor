@@ -1,12 +1,14 @@
 <?php
 require_once 'config.php';
 
-$course_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+//chk_user();
+
+$course_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) ?? -1;
 
 try {
     $dbh = get_pdo_connection();
 
-    if ($course_id !== null && $course_id !== false && $course_id > 0) {
+    if ($course_id != -1) {
 
         // Get information for one course
         $query = $dbh->prepare("
@@ -14,9 +16,9 @@ try {
                 c.title, c.course_number, c.dept_id, c.course_id, c.subject,
                 d.dept_name,
                 p.first_name, p.last_name, p.prof_id,
-                t.teaching_id, t.term_id, t.modality,
+                t.teaching_id, t.term_id,
                 GROUP_CONCAT(
-            DISTINCT CONCAT(tt.season, ' ', tt.term_year)
+            DISTINCT CONCAT(tt.season, ' ', tt.term_year, ' ', t.modality)
             ORDER BY tt.term_year ASC,
                 FIELD(tt.season, 'Spring', 'Summer', 'Fall', 'Winter')
             SEPARATOR ', '
@@ -31,6 +33,11 @@ try {
             LEFT JOIN term AS tt
                 ON t.term_id = tt.term_id
             WHERE c.course_id = ?
+        GROUP BY
+        c.course_id, c.title, c.course_number, c.dept_id, c.subject,
+        d.dept_name,
+        p.prof_id, p.first_name, p.last_name
+        ORDER BY p.last_name ASC
         ");
 
         $query->execute([$course_id]);
@@ -76,16 +83,16 @@ try {
 
 <body>
 
-    <?php if ($course_id): ?>
+    <?php if ($course_id != -1): ?>
 
         <h1>Course Details</h1>
-
         <?php foreach ($courses as $course): ?>
             <div>
                 <h2>
                     <?= htmlspecialchars($course['subject']) ?>
                     <?= htmlspecialchars($course['course_number']) ?>
                     -
+
                     <?= htmlspecialchars($course['title']) ?>
                 </h2>
 
@@ -101,20 +108,15 @@ try {
                             <?= htmlspecialchars($course['first_name']) ?>
                             <?= htmlspecialchars($course['last_name']) ?>
                         </a>
-                    <?php else: ?>
-                        TBA
-                    <?php endif; ?>
-                </p>
-
                 <p>
                     Term:
                     <?= htmlspecialchars($course['terms'] ?? 'TBA') ?>
                 </p>
 
-                <p>
-                    Modality:
-                    <?= htmlspecialchars($course['modality'] ?? 'TBA') ?>
-                </p>
+            <?php else: ?>
+                TBA
+            <?php endif; ?>
+            </p>
             </div>
         <?php endforeach; ?>
 
@@ -125,7 +127,7 @@ try {
         <ul>
             <?php foreach ($courses as $course): ?>
                 <li>
-                    <a href="coursepage.php?id=<?= urlencode($course['course_id']) ?>">
+                    <a href="courses.php?id=<?= urlencode($course['course_id']) ?>">
                         <?= htmlspecialchars($course['subject']) ?>
                         <?= htmlspecialchars($course['course_number']) ?>
                         -

@@ -17,7 +17,7 @@ try {
     echo "Connection failed: " . $e->getMessage();
     exit();
 }
-//include 'header.php'; For Later use 
+//include 'navbar.php'; For Later use 
 ?>
 
 <!DOCTYPE html>
